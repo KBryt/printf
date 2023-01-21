@@ -177,9 +177,7 @@ int _printf(const char *format, ...)
 	len += buffered_print(NULL, UINT_MAX);
 
 
-
 	va_end(args);
-
 
 
 	return (len);
