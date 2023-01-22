@@ -125,7 +125,6 @@ int _printf(const char *format, ...)
 	int len = 0;
 
 
-
 	if (format == NULL)
 
 		return (-1);
