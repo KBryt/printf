@@ -1,5 +1,4 @@
 #include "main.h"
-/* Author: Seiyefa Abornyuie */
 
 void print_buffer(char buffer[], int *buff_ind);
 
