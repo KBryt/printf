@@ -47,10 +47,14 @@ int print_string(va_list types, char buffer[],
 	}
 
 	while (str[length] != '\0')
+	{	
 		length++;
+	}
 
 	if (precision >= 0 && precision < length)
+	{
 		length = precision;
+	}
 
 	if (width > length)
 	{
