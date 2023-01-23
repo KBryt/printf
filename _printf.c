@@ -1,184 +1,67 @@
-#include <limits.h>
-
-#include <stdlib.h>
-
-#include <string.h>
-
-
-
-#include "print_helpers.h"
-
-
-
 #include "main.h"
+/* Author: Seiyefa Abornyuie */
 
-
-
-/**
-
- * print_all - Print all formats
-
- * @spec: specifier object
-
- * @args: pointer to arguments to be printed
-
- *
-
- * Return: length of bytes written
-
- */
-
-static int print_all(specifier_t *spec, va_list args)
-
-{
-
-	int format_t_len = 0;
-
-	int j = 0;
-
-	int len = 0;
-
-	format_t f[] = {
-
-		{'c', print_char},
-
-		{'i', print_int},
-
-		{'d', print_int},
-
-		{'u', print_unsigned},
-
-		{'o', print_octal},
-
-		{'x', print_hex},
-
-		{'X', print_hex_cap},
-
-		{'p', print_address},
-
-		{'s', print_string},
-
-		{'S', print_custom_S},
-
-		{'%', print_percent},
-
-		{'r', print_reverse},
-
-		{'R', print_rot_13},
-
-		{'b', print_binary},
-
-	};
-
-	format_t_len = sizeof(f) / sizeof(f[0]);
-
-
-
-	while (spec && j < format_t_len && spec->specifier != f[j].specifier)
-
-		j++;
-
-	if (j < format_t_len)
-
-	{
-
-		return (f[j].print(spec, args));
-
-	}
-
-	else if (spec && spec->specifier)
-
-	{
-
-		len += buffered_print("%", 1);
-
-		len += buffered_print(&spec->specifier, 1);
-
-	}
-
-
-
-	return (len);
-
-}
-
-
+void print_buffer(char buffer[], int *buff_ind);
 
 /**
-
- * _printf - Print all formats
-
- * @format: format string
-
- *
-
- * Return: 0
-
+ * _printf - Printf function
+ * @format: format.
+ * Return: Printed chars.
  */
-
 int _printf(const char *format, ...)
-
 {
-
-	va_list args;
-
-	int len = 0;
-
+	int i, printed = 0, printed_chars = 0;
+	int flags, width, precision, size, buff_ind = 0;
+	va_list list;
+	char buffer[BUFF_SIZE];
 
 	if (format == NULL)
-
 		return (-1);
 
-	va_start(args, format);
+	va_start(list, format);
 
-
-
-	while (format && *format)
-
+	for (i = 0; format && format[i] != '\0'; i++)
 	{
-
-		if (*format == '%' && *(format + 1))
-
+		if (format[i] != '%')
 		{
-
-			int skip = 0;
-
-			specifier_t spec;
-
-
-
-			memset(&spec, 0, sizeof(spec));
-
-			skip = get_specifier(&spec, format + 1, args);
-
-			format += skip;
-
-			if (spec.specifier == '\0')
-
-				break;
-
-			len += print_all(&spec, args);
-
-			format++;
-
-			continue;
-
+			buffer[buff_ind++] = format[i];
+			if (buff_ind == BUFF_SIZE)
+				print_buffer(buffer, &buff_ind);
+			/* write(1, &format[i], 1);*/
+			printed_chars++;
 		}
-
-		if (*format == '%' && *(format + 1) == '\0')
-
-			break;
-
-		len += buffered_print(format++, 1);
-
+		else
+		{
+			print_buffer(buffer, &buff_ind);
+			flags = get_flags(format, &i);
+			width = get_width(format, &i, list);
+			precision = get_precision(format, &i, list);
+			size = get_size(format, &i);
+			++i;
+			printed = handle_print(format, &i, list, buffer,
+				flags, width, precision, size);
+			if (printed == -1)
+				return (-1);
+			printed_chars += printed;
+		}
 	}
 
-	len += buffered_print(NULL, UINT_MAX);
+	print_buffer(buffer, &buff_ind);
 
+	va_end(list);
 
-	va_end(args);
+	return (printed_chars);
+}
 
+/**
+ * print_buffer - Prints the contents of the buffer if it exist
+ * @buffer: Array of chars
+ * @buff_ind: Index at which to add next char, represents the length.
+ */
+void print_buffer(char buffer[], int *buff_ind)
+{
+	if (*buff_ind > 0)
+		write(1, &buffer[0], *buff_ind);
 
-	return (len);
-
+	*buff_ind = 0;
 }
